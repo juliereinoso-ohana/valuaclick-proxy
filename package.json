@@ -1,0 +1,13 @@
+{
+  "name": "valuaclick-proxy",
+  "version": "2.0.0",
+  "description": "Proxy para ValuaClick con Claude web search",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0"
+  }
+}
