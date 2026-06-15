@@ -9,7 +9,7 @@ const VC_SECRET     = "valuaclick2026mx";
 const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY;
 const SUPABASE_URL  = process.env.SUPABASE_URL;
 const SUPABASE_KEY  = process.env.SUPABASE_KEY;
-const MODEL         = "claude-sonnet-4-6";
+const MODEL         = "claude-haiku-4-5";
 // ──────────────────────────────────────────────────────────────────
 
 // CORS
@@ -134,7 +134,7 @@ Reglas importantes:
       },
       body: JSON.stringify({
         model:      MODEL,
-        max_tokens: 4000,
+        max_tokens: 1200,
          messages: [
     { role: "user", content: prompt }
   ],
@@ -150,7 +150,7 @@ try {
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 4000,
+      max_tokens: 1200,
       messages: [
         { role: "user", content: prompt }
       ]
