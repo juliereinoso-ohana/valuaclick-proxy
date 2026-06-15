@@ -134,18 +134,10 @@ Reglas importantes:
       body: JSON.stringify({
         model:      MODEL,
         max_tokens: 4000,
-        tools: [
-          {
-            type: "web_search_20250305",
-            name: "web_search",
-          }
-        ],
-        messages: [
-          { role: "user", content: prompt }
-        ],
-      }),
-    });
-
+         messages: [
+    { role: "user", content: prompt }
+  ],
+}),
     const httpCode = response.status;
     const apiData  = await response.json();
 
