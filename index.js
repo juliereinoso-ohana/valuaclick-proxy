@@ -138,8 +138,9 @@ Reglas importantes:
     { role: "user", content: prompt }
   ],
 }),
-    const httpCode = response.status;
-    const apiData  = await response.json();
+   });
+const httpCode = response.status;
+const apiData = await response.json();
 
     if (httpCode !== 200) {
       return res.status(500).json({
