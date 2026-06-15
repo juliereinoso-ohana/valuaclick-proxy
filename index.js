@@ -140,12 +140,31 @@ Reglas importantes:
   ],
 }),
    });
-const httpCode = response.status;
-const apiData = await response.json();
-console.log("ANTHROPIC HTTP:", httpCode);
-console.log("ANTHROPIC DATA:", JSON.stringify(apiData, null, 2));
-    }
+try {
 
+  const response = await fetch(...);
+
+  const httpCode = response.status;
+  const apiData = await response.json();
+
+  console.log("ANTHROPIC HTTP:", httpCode);
+  console.log("ANTHROPIC DATA:", JSON.stringify(apiData, null, 2));
+
+  if (httpCode !== 200) {
+    return res.status(500).json({
+      error: "Error en API de Anthropic (HTTP " + httpCode + ")",
+      detalle: apiData?.error?.message || JSON.stringify(apiData),
+    });
+  }
+
+} catch (err) {
+
+  return res.status(500).json({
+    error: "Error interno del servidor",
+    detalle: err.message
+  });
+
+}
     // 6. Extraer texto de todos los bloques
     const blocks   = apiData.content || [];
     let textoFinal = "";
