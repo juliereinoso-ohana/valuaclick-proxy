@@ -50,7 +50,8 @@ async function obtenerPortales() {
 
 // ─── ENDPOINT PRINCIPAL ───────────────────────────────────────────
 app.post("/buscar", async (req, res) => {
-
+  console.log("POST /buscar recibido:", req.body);
+  
   // 1. Verificar clave secreta
   const secret = req.headers["x-vc-secret"];
   if (secret !== VC_SECRET) {
