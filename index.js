@@ -142,12 +142,8 @@ Reglas importantes:
    });
 const httpCode = response.status;
 const apiData = await response.json();
-
-    if (httpCode !== 200) {
-      return res.status(500).json({
-        error:   "Error en API de Anthropic (HTTP " + httpCode + ")",
-        detalle: apiData?.error?.message || JSON.stringify(apiData),
-      });
+console.log("ANTHROPIC HTTP:", httpCode);
+console.log("ANTHROPIC DATA:", JSON.stringify(apiData, null, 2));
     }
 
     // 6. Extraer texto de todos los bloques
