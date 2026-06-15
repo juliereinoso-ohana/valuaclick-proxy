@@ -141,8 +141,21 @@ Reglas importantes:
 }),
    });
 try {
-
-  const response = await fetch(...);
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": ANTHROPIC_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 4000,
+      messages: [
+        { role: "user", content: prompt }
+      ]
+    }),
+  });
 
   const httpCode = response.status;
   const apiData = await response.json();
@@ -157,13 +170,60 @@ try {
     });
   }
 
+  const blocks = apiData.content || [];
+  let textoFinal = "";
+
+  for (const block of blocks) {
+    if (block.type === "text" && block.text) {
+      textoFinal += block.text;
+    }
+  }
+
+  if (!textoFinal.trim()) {
+    return res.status(500).json({ error: "Respuesta vacía de Claude" });
+  }
+
+  let limpio = textoFinal.trim();
+  limpio = limpio.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+
+  const inicio = limpio.indexOf("{");
+  const fin = limpio.lastIndexOf("}");
+
+  if (inicio === -1 || fin === -1) {
+    return res.status(500).json({
+      error: "No se encontró JSON en la respuesta",
+      raw: limpio.slice(0, 300)
+    });
+  }
+
+  const jsonPuro = limpio.slice(inicio, fin + 1);
+  const resultado = JSON.parse(jsonPuro);
+
+  if (!resultado.resultados || !Array.isArray(resultado.resultados)) {
+    return res.status(500).json({ error: "Estructura de respuesta incorrecta" });
+  }
+
+  resultado.resultados = resultado.resultados.map(p => {
+    const nombresGenericos = ["agente", "asesor", "vendedor", "contacto", "inmobiliaria", "no disponible"];
+    const esGenerico = (val) => !val || nombresGenericos.some(g => val.toLowerCase().includes(g));
+
+    return {
+      ...p,
+      contacto_nombre: esGenerico(p.contacto_nombre) ? "" : p.contacto_nombre,
+      contacto_telefono: esGenerico(p.contacto_telefono) ? "" : p.contacto_telefono,
+      contacto_agencia: esGenerico(p.contacto_agencia) ? "" : p.contacto_agencia,
+    };
+  });
+
+  return res.status(200).json(resultado);
+
 } catch (err) {
+  console.error("ERROR INTERNO:", err);
 
   return res.status(500).json({
     error: "Error interno del servidor",
     detalle: err.message
   });
-
 }
     // 6. Extraer texto de todos los bloques
     const blocks   = apiData.content || [];
