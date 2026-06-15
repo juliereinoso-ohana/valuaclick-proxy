@@ -8,6 +8,8 @@ app.use(express.json());
 const VC_SECRET = "valuaclick2026mx";
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+const GOOGLE_CX = process.env.GOOGLE_CX;
 // ──────────────────────────────────────────────────────────────────
 
 // CORS
@@ -25,7 +27,7 @@ app.use((req, res, next) => {
 app.get("/", (req, res) => {
   res.json({
     status: "ValuaClick Proxy activo",
-    version: "4.0 sin Anthropic"
+    version: "5.0 Google Search API"
   });
 });
 
@@ -49,7 +51,6 @@ async function obtenerPortales() {
     }
 
     const data = await response.json();
-
     return Array.isArray(data) ? data : [];
 
   } catch (error) {
@@ -58,7 +59,6 @@ async function obtenerPortales() {
   }
 }
 
-// ─── LIMPIAR TEXTO PARA GOOGLE ───────────────────────────────────
 function limpiarTexto(texto) {
   return (texto || "")
     .toString()
@@ -76,6 +76,41 @@ function dominioDesdeUrl(url) {
   } catch (error) {
     return "";
   }
+}
+
+function detectarPortal(link, portales) {
+  const url = (link || "").toLowerCase();
+
+  const encontrado = portales.find(p => {
+    const dominio = dominioDesdeUrl(p.url).toLowerCase();
+    return dominio && url.includes(dominio);
+  });
+
+  return encontrado ? encontrado.nombre : "Portal inmobiliario";
+}
+
+// ─── BUSCAR EN GOOGLE CUSTOM SEARCH ───────────────────────────────
+async function buscarEnGoogle(query) {
+  const url =
+    "https://www.googleapis.com/customsearch/v1?" +
+    new URLSearchParams({
+      key: GOOGLE_API_KEY,
+      cx: GOOGLE_CX,
+      q: query,
+      num: "10",
+      gl: "mx",
+      hl: "es"
+    }).toString();
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error("GOOGLE SEARCH ERROR:", JSON.stringify(data, null, 2));
+    throw new Error(data?.error?.message || "Error en Google Custom Search");
+  }
+
+  return data.items || [];
 }
 
 // ─── ENDPOINT PRINCIPAL ───────────────────────────────────────────
@@ -101,6 +136,12 @@ app.post("/buscar", async (req, res) => {
     return res.status(400).json({ error: "Estado requerido" });
   }
 
+  if (!GOOGLE_API_KEY || !GOOGLE_CX) {
+    return res.status(500).json({
+      error: "Faltan variables de Google Search API"
+    });
+  }
+
   try {
     const portalesDB = await obtenerPortales();
 
@@ -115,7 +156,7 @@ app.post("/buscar", async (req, res) => {
 
     const ubicacion = [colonia, ciudad, estado].filter(Boolean).join(", ");
 
-    const busquedaBase = limpiarTexto([
+    const consulta = limpiarTexto([
       tipo,
       operacion,
       colonia,
@@ -124,54 +165,49 @@ app.post("/buscar", async (req, res) => {
       precio
     ].filter(Boolean).join(" "));
 
-    const resultados = portalesActivos
-      .filter(portal => portal && portal.nombre)
-      .map((portal, index) => {
-        const dominio = dominioDesdeUrl(portal.url);
+    const query = `${consulta} inmueble propiedad casa departamento terreno`;
 
-        const query = dominio
-          ? `site:${dominio} ${busquedaBase}`
-          : busquedaBase;
+    const googleItems = await buscarEnGoogle(query);
 
-        const googleUrl =
-          "https://www.google.com/search?q=" + encodeURIComponent(query);
+    const resultados = googleItems.map((item, index) => {
+      const portal = detectarPortal(item.link, portalesActivos);
 
-        return {
-          titulo: `Buscar en ${portal.nombre}`,
-          tipo,
-          operacion,
-          estado,
-          ciudad,
-          colonia,
-          precio: 0,
-          moneda: "MXN",
-          construccion_m2: 0,
-          terreno_m2: 0,
-          precio_m2: 0,
-          recamaras: 0,
-          banos: 0,
-          estacionamientos: 0,
-          antiguedad_anios: 0,
-          estado_conservacion: "No aplica",
-          portal: portal.nombre,
-          url_fuente: googleUrl,
-          dias_publicado: 0,
-          contacto_nombre: "",
-          contacto_telefono: "",
-          contacto_agencia: "",
-          score_comercial: Math.max(95 - index, 70),
-          notas: `Búsqueda inteligente generada para ${portal.nombre}`
-        };
-      });
+      return {
+        titulo: item.title || "Resultado inmobiliario",
+        tipo,
+        operacion,
+        estado,
+        ciudad,
+        colonia,
+        precio: 0,
+        moneda: "MXN",
+        construccion_m2: 0,
+        terreno_m2: 0,
+        precio_m2: 0,
+        recamaras: 0,
+        banos: 0,
+        estacionamientos: 0,
+        antiguedad_anios: 0,
+        estado_conservacion: "Verificar en publicación",
+        portal,
+        url_fuente: item.link || "#",
+        dias_publicado: 0,
+        contacto_nombre: "",
+        contacto_telefono: "",
+        contacto_agencia: "",
+        score_comercial: Math.max(95 - index, 70),
+        notas: item.snippet || "Resultado encontrado por Google Custom Search"
+      };
+    });
 
     return res.status(200).json({
       resultados,
-      resumen_zona: `ValuaClick generó búsquedas inteligentes para ${tipo} en ${operacion} en ${ubicacion}. Abre cada portal para revisar publicaciones reales indexadas por Google.`,
+      resumen_zona: `ValuaClick encontró ${resultados.length} resultados inmobiliarios relacionados con ${tipo} en ${operacion} en ${ubicacion}. Revisa cada publicación para validar precio, superficie y disponibilidad.`,
       total_encontrados: resultados.length
     });
 
   } catch (error) {
-    console.error("ERROR GENERANDO ENLACES:", error);
+    console.error("ERROR GOOGLE SEARCH:", error);
 
     return res.status(500).json({
       error: "Error interno del servidor",
@@ -184,5 +220,5 @@ app.post("/buscar", async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log("ValuaClick Proxy v4.0 sin Anthropic corriendo en puerto " + PORT);
+  console.log("ValuaClick Proxy v5.0 Google Search API corriendo en puerto " + PORT);
 });
