@@ -145,6 +145,7 @@ app.post("/buscar", async (req, res) => {
   if (!estado) {
   return res.status(400).json({ error: "Estado requerido" });
 }
+  });
 // ─── INICIAR SERVIDOR ─────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 
