@@ -111,10 +111,10 @@ async function buscarEnGoogle(query) {
     const response = await fetch(url);
     const data = await response.json();
 
-    if (!response.ok) {
-      console.error("GOOGLE SEARCH ERROR:", JSON.stringify(data, null, 2));
-      return [];
-    }
+   if (!response.ok) {
+  console.error("GOOGLE SEARCH ERROR:", JSON.stringify(data, null, 2));
+  return [];
+}
 
     return data.items || [];
 
