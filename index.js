@@ -91,6 +91,10 @@ function detectarPortal(link, portales) {
 
 // ─── BUSCAR EN GOOGLE CUSTOM SEARCH ───────────────────────────────
 async function buscarEnGoogle(query) {
+
+  console.log("GOOGLE_API_KEY:", GOOGLE_API_KEY?.substring(0,10));
+  console.log("GOOGLE_CX:", GOOGLE_CX);
+
   const url =
     "https://www.googleapis.com/customsearch/v1?" +
     new URLSearchParams({
@@ -102,17 +106,19 @@ async function buscarEnGoogle(query) {
       hl: "es"
     }).toString();
 
+  console.log("URL GOOGLE:", url);
+
   const response = await fetch(url);
   const data = await response.json();
 
+  console.log("RESPUESTA GOOGLE:", JSON.stringify(data,null,2));
+
   if (!response.ok) {
-    console.error("GOOGLE SEARCH ERROR:", JSON.stringify(data, null, 2));
-    throw new Error(data?.error?.message || "Error en Google Custom Search");
+    throw new Error(data?.error?.message || "Error Google");
   }
 
   return data.items || [];
 }
-
 // ─── ENDPOINT PRINCIPAL ───────────────────────────────────────────
 app.post("/buscar", async (req, res) => {
   console.log("POST /buscar recibido:", req.body);
