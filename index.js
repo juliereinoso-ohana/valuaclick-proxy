@@ -117,7 +117,7 @@ app.post("/buscar", async (req, res) => {
     precio
   };
 
-  const resultados = generarResultadosFallback(datos);
+  const resultados = await buscarResultadosReales(datos);
 
   const ubicacion = [colonia, ciudad, estado].filter(Boolean).join(", ");
 
