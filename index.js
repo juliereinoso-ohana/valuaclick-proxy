@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 
+const { buscarResultados } = require("./src/services/searchService");
+
 const app = express();
 
 app.use(cors());
@@ -117,7 +119,7 @@ app.post("/buscar", async (req, res) => {
     precio
   };
 
-  const resultados = await buscarResultadosReales(datos);
+ const resultados = await buscarResultados(datos);
 
   const ubicacion = [colonia, ciudad, estado].filter(Boolean).join(", ");
 
