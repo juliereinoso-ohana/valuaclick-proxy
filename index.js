@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 
@@ -119,7 +121,14 @@ app.post("/buscar", async (req, res) => {
     precio
   };
 
- const resultados = await buscarResultados(datos);
+ let resultados = [];
+
+try {
+  resultados = await buscarResultados(datos);
+} catch (error) {
+  console.error("ERROR EN BUSCADOR:", error.response?.data || error.message);
+  resultados = generarResultadosFallback(datos);
+}
 
   const ubicacion = [colonia, ciudad, estado].filter(Boolean).join(", ");
 

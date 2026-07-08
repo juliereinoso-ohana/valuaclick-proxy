@@ -5,16 +5,13 @@ const PORTALES = [
   { nombre: "Lamudi", dominio: "lamudi.com.mx" },
   { nombre: "Propiedades.com", dominio: "propiedades.com" },
   { nombre: "Vivanuncios", dominio: "vivanuncios.com.mx" },
-  { nombre: "Trovit", dominio: "trovit.com.mx" },
-  { nombre: "RE/MAX", dominio: "remax.com.mx" },
-  { nombre: "KW México", dominio: "kwmexico.mx" },
-  { nombre: "Nocnok", dominio: "nocnok.com" }
+  { nombre: "Trovit", dominio: "trovit.com.mx" }
 ];
 
 async function buscarResultados(datos) {
-  console.log("Buscando propiedades desde searchService...");
+  console.log("Buscando propiedades reales desde Google...");
 
-  const resultados = await Promise.all(
+  const respuestas = await Promise.all(
     PORTALES.map((portal, index) =>
       buscarEnGoogleProvider(datos, {
         ...portal,
@@ -23,7 +20,7 @@ async function buscarResultados(datos) {
     )
   );
 
-  return resultados;
+  return respuestas.flat();
 }
 
 module.exports = {
