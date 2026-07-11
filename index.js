@@ -1,9 +1,22 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 
+const { buscarResultados } = require("./src/services/searchService");
+
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://valuaclick.mx",
+    "https://www.valuaclick.mx",
+    "http://localhost:5173"
+  ],
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "X-VC-Secret"]
+}));
+
 app.use(express.json());
 
 const VC_SECRET = process.env.VC_SECRET || "valuaclick2026mx";
@@ -117,7 +130,14 @@ app.post("/buscar", async (req, res) => {
     precio
   };
 
-  const resultados = await buscarResultadosReales(datos);
+ let resultados = [];
+
+try {
+  resultados = await buscarResultados(datos);
+} catch (error) {
+  console.error("ERROR EN BUSCADOR:", error.response?.data || error.message);
+  resultados = generarResultadosFallback(datos);
+}
 
   const ubicacion = [colonia, ciudad, estado].filter(Boolean).join(", ");
 
