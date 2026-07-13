@@ -1,6 +1,6 @@
 const {
-  buscarEnGoogleProvider
-} = require("../providers/googleProvider");
+  buscarEnSearXProvider
+} = require("../providers/searxProvider");
 
 const PORTALES = [
   {
@@ -30,9 +30,6 @@ const PORTALES = [
   }
 ];
 
-/**
- * Elimina resultados duplicados usando la URL como identificador.
- */
 function eliminarDuplicados(resultados = []) {
   const urlsVistas = new Set();
 
@@ -48,9 +45,6 @@ function eliminarDuplicados(resultados = []) {
   });
 }
 
-/**
- * Valida que existan datos mínimos para hacer una búsqueda útil.
- */
 function validarDatosBusqueda(datos = {}) {
   const tieneUbicacion =
     datos.estado ||
@@ -58,15 +52,11 @@ function validarDatosBusqueda(datos = {}) {
     datos.colonia;
 
   if (!datos.tipo) {
-    throw new Error(
-      "Debes indicar el tipo de propiedad"
-    );
+    throw new Error("Debes indicar el tipo de propiedad");
   }
 
   if (!datos.operacion) {
-    throw new Error(
-      "Debes indicar si la búsqueda es venta o renta"
-    );
+    throw new Error("Debes indicar si la búsqueda es venta o renta");
   }
 
   if (!tieneUbicacion) {
@@ -76,10 +66,6 @@ function validarDatosBusqueda(datos = {}) {
   }
 }
 
-/**
- * Ejecuta las búsquedas sin cancelar todo el proceso
- * cuando uno de los portales presenta un error.
- */
 async function buscarResultados(datos = {}) {
   validarDatosBusqueda(datos);
 
@@ -93,7 +79,7 @@ async function buscarResultados(datos = {}) {
 
   const resultadosPortales = await Promise.allSettled(
     PORTALES.map((portal) =>
-      buscarEnGoogleProvider(datos, portal)
+      buscarEnSearXProvider(datos, portal)
     )
   );
 
@@ -104,9 +90,7 @@ async function buscarResultados(datos = {}) {
     const portal = PORTALES[index];
 
     if (respuesta.status === "fulfilled") {
-      resultadosExitosos.push(
-        ...respuesta.value
-      );
+      resultadosExitosos.push(...respuesta.value);
 
       console.log(
         `${portal.nombre}: ${respuesta.value.length} resultados`
@@ -127,15 +111,15 @@ async function buscarResultados(datos = {}) {
     }
   });
 
-  const resultadosLimpios = eliminarDuplicados(
-    resultadosExitosos
-  );
+  const resultadosLimpios =
+    eliminarDuplicados(resultadosExitosos);
 
-  const resultadosOrdenados = resultadosLimpios.sort(
-    (a, b) =>
-      Number(b.score_comercial || 0) -
-      Number(a.score_comercial || 0)
-  );
+  const resultadosOrdenados =
+    resultadosLimpios.sort(
+      (a, b) =>
+        Number(b.score_comercial || 0) -
+        Number(a.score_comercial || 0)
+    );
 
   console.log("====================================");
   console.log(
