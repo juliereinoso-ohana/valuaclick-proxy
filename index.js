@@ -271,7 +271,7 @@ app.post("/buscar", async (req, res) => {
       total_encontrados: resultados.length,
       resumen_busqueda: resumenBusqueda,
 
-      modo: "google_custom_search",
+      modo: "searxng",
       duracion_ms: Date.now() - inicio
     });
   } catch (error) {
