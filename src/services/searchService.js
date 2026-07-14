@@ -1,4 +1,8 @@
 const {
+  extraerDatos
+} = require("../extractors/extractorUniversal");
+
+const {
   buscarEnSearXProvider
 } = require("../providers/searxProvider");
 
@@ -120,6 +124,31 @@ async function buscarResultados(datos = {}) {
         Number(b.score_comercial || 0) -
         Number(a.score_comercial || 0)
     );
+   const resultadosEnriquecidos = await Promise.all(
+  resultadosOrdenados.slice(0, 5).map(async (resultado) => {
+    try {
+      const datosExtraidos = await extraerDatos(
+        resultado.url_fuente
+      );
+
+      return {
+        ...resultado,
+        ...datosExtraidos,
+        url_fuente: resultado.url_fuente,
+        portal: resultado.portal,
+        score_comercial: resultado.score_comercial
+      };
+    } catch (error) {
+      console.error(
+        "No se pudo extraer:",
+        resultado.url_fuente,
+        error.message
+      );
+
+      return resultado;
+    }
+  })
+); 
 
   console.log("====================================");
   console.log(
@@ -133,9 +162,9 @@ async function buscarResultados(datos = {}) {
   console.log("====================================");
 
   return {
-    resultados: resultadosOrdenados,
+    resultados: resultadosEnriquecidos,
     resumen: {
-      total_resultados: resultadosOrdenados.length,
+      total_resultados: resultadosEnriquecidos.length,
       portales_consultados: PORTALES.length,
       portales_exitosos:
         PORTALES.length - portalesConError.length,
