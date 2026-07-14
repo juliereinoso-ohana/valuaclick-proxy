@@ -8,29 +8,9 @@ const {
 
 const PORTALES = [
   {
-    nombre: "Inmuebles24",
-    dominio: "inmuebles24.com",
-    score: 95
-  },
-  {
     nombre: "Lamudi",
     dominio: "lamudi.com.mx",
     score: 92
-  },
-  {
-    nombre: "Propiedades.com",
-    dominio: "propiedades.com",
-    score: 89
-  },
-  {
-    nombre: "Vivanuncios",
-    dominio: "vivanuncios.com.mx",
-    score: 86
-  },
-  {
-    nombre: "Trovit",
-    dominio: "trovit.com.mx",
-    score: 83
   }
 ];
 
