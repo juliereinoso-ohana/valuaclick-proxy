@@ -18,7 +18,10 @@ function normalizarAgencia(nombre = "") {
   resultado = resultado
     .replace(/[.,;:\-\s]+$/g, "")
     .trim();
-
+resultado = resultado.replace(
+  /\b(?:casa|departamento|terreno|oficina|local|bodega)\s+en\s+(?:venta|renta)\b[\s\S]*$/i,
+  ""
+);
   return resultado || null;
 }
 
