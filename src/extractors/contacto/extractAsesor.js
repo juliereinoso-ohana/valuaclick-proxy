@@ -12,7 +12,27 @@ function normalizarAsesor(nombre = "") {
     )
     .replace(/[.,;:\-\s]+$/g, "")
     .trim();
+const frasesInvalidas = [
+  "de confianza",
+  "no disponible",
+  "consultar",
+  "según portal",
+  "según anuncio"
+];
 
+if (
+  frasesInvalidas.some((frase) =>
+    resultado.toLowerCase().includes(frase)
+  )
+) {
+  return null;
+}
+
+const palabras = resultado.split(/\s+/);
+
+if (palabras.length < 2 || palabras.length > 5) {
+  return null;
+}
   return resultado || null;
 }
 

@@ -1,4 +1,8 @@
 const {
+  extraerContacto
+} = require("./contacto/extractContacto");
+
+const {
   extraerWhatsapp
 } = require("./contacto/extractWhatsapp");
 
@@ -124,6 +128,9 @@ $('script[type="application/ld+json"]').each((i, el) => {
     scriptsJson.push($(el).html());
 });
   const textoPagina = $("body").text();
+
+  const contactoDetectado =
+  extraerContacto($, textoPagina);
 
   const whatsappDetectado =
   extraerWhatsapp($, textoPagina);

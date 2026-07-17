@@ -88,22 +88,18 @@ async function buscarEnSearXProvider(datos = {}, portal = {}) {
   console.log("====================================");
 
   try {
-    const response = await axios.get(SEARX_URL, {
-      params: {
-        q: query,
-        format: "json",
-        language: "es-MX",
-        safesearch: 0
-      },
-      timeout: 30000,
-      headers: {
-        "User-Agent": "ValuaClick/1.0"
-      }
-    });
+  const urlFinal =
+    `${SEARX_URL}?q=${encodeURIComponent(query)}&format=json`;
 
-    const items = Array.isArray(response.data?.results)
-      ? response.data.results
-      : [];
+  console.log("URL FINAL:", urlFinal);
+
+  const response = await axios.get(urlFinal, {
+    timeout: 30000
+  });
+
+  const items = Array.isArray(response.data?.results)
+    ? response.data.results
+    : [];
 
     console.log(
       `Resultados encontrados en ${nombrePortal}:`,
@@ -199,6 +195,13 @@ async function buscarEnSearXProvider(datos = {}, portal = {}) {
     console.error("Portal:", nombrePortal);
     console.error("Código HTTP:", status || "Sin respuesta");
     console.error("Detalle:", detalle);
+    
+    console.error(
+  "Respuesta SearX:",
+  typeof error.response?.data === "string"
+    ? error.response.data.slice(0, 500)
+    : error.response?.data
+);
     console.error("===================================");
 
     if (error.code === "ECONNABORTED") {

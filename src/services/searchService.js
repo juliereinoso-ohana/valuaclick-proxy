@@ -1,4 +1,8 @@
 const {
+  buscarEnLamudiProvider
+} = require("../providers/lamudiProvider");
+
+const {
   extraerDatos
 } = require("../extractors/extractorUniversal");
 
@@ -63,7 +67,7 @@ async function buscarResultados(datos = {}) {
 
   const resultadosPortales = await Promise.allSettled(
     PORTALES.map((portal) =>
-      buscarEnSearXProvider(datos, portal)
+     buscarEnLamudiProvider(datos)
     )
   );
 
@@ -104,20 +108,17 @@ async function buscarResultados(datos = {}) {
         Number(b.score_comercial || 0) -
         Number(a.score_comercial || 0)
     );
-   const resultadosEnriquecidos = await Promise.all(
-  resultadosOrdenados.slice(0, 5).map(async (resultado) => {
-    try {
-      const datosExtraidos = await extraerDatos(
-        resultado.url_fuente
-      );
+  const resultadosEnriquecidos = resultadosOrdenados.slice(0, 5);
 
       return {
-        ...resultado,
-        ...datosExtraidos,
-        url_fuente: resultado.url_fuente,
-        portal: resultado.portal,
-        score_comercial: resultado.score_comercial
-      };
+  ...datosExtraidos,
+  ...resultado,
+
+  url_fuente: resultado.url_fuente,
+  portal: resultado.portal,
+  fuente_busqueda: "lamudi_directo",
+  score_comercial: Number(resultado.score_comercial || 92)
+};
     } catch (error) {
       console.error(
         "No se pudo extraer:",
