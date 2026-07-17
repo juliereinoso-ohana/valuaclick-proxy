@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.*
+!.env.example
+
+lamudi.html
+lamudi-detalle.html
+
+*.log
