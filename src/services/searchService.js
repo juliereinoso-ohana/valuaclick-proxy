@@ -110,27 +110,6 @@ async function buscarResultados(datos = {}) {
     );
   const resultadosEnriquecidos = resultadosOrdenados.slice(0, 5);
 
-      return {
-  ...datosExtraidos,
-  ...resultado,
-
-  url_fuente: resultado.url_fuente,
-  portal: resultado.portal,
-  fuente_busqueda: "lamudi_directo",
-  score_comercial: Number(resultado.score_comercial || 92)
-};
-    } catch (error) {
-      console.error(
-        "No se pudo extraer:",
-        resultado.url_fuente,
-        error.message
-      );
-
-      return resultado;
-    }
-  })
-); 
-
   console.log("====================================");
   console.log(
     "Resultados totales:",
